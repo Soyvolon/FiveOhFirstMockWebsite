@@ -1,0 +1,39 @@
+﻿<div class="row">
+    <div class="col-lg-12 col-md-12 col-sm-12">
+        @* Company Staff *@
+        <b>@CompanyName @Number</b>
+        <PlatoonStaff Platoon="Platoon" />
+    </div>
+</div>
+<CascadingValue Value="Number" Name="PlatoonNumber">
+    <div class="row justify-content-center">
+        <div class="col-lg-6 col-md-12 col-sm-12">
+            @* First Squad *@
+            <SquadListing Squad="Platoon.Squads[0]" Number="1"/>
+        </div>
+        <div class="col-lg-6 col-md-12 col-sm-12">
+            @* Second Squad *@
+            <SquadListing Squad="Platoon.Squads[1]" Number="2"/>
+        </div>
+        <div class="col-lg-6 col-md-12 col-sm-12">
+            @* Third Squad *@
+            <SquadListing Squad="Platoon.Squads[2]" Number="3"/>
+        </div>
+    </div>
+</CascadingValue>
+
+@code {
+    [Parameter]
+    public int Number { get; set; }
+
+    [Parameter]
+    public PlatoonData Platoon { get; set; }
+
+    [CascadingParameter(Name = "CompanyName")]
+    public string CompanyName { get; set; }
+
+    protected override void OnParametersSet()
+    {
+        base.OnParametersSet();
+    }
+}

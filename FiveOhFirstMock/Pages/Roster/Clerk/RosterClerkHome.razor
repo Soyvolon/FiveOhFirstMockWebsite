@@ -1,0 +1,14 @@
+﻿@page "/roster/clerk"
+
+<AuthorizeView>
+    <Authorized>
+        <h3>RosterClerkHome</h3>
+    </Authorized>
+    <NotAuthorized>
+        <b>You don't have acces to view this resource. Go <a href="/">home</a>.</b>
+    </NotAuthorized>
+</AuthorizeView>
+
+@code {
+
+}

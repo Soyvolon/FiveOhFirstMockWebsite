@@ -1,0 +1,72 @@
+﻿<div class="row">
+    <div class="col-md-12 col-lg-6 border border-dark">
+        @TeamName Team Lead
+    </div>
+    <div class="col-md-12 col-lg-6 border border-dark">
+        @(Team.Lead?.UserName ?? "TBD") 
+    </div>
+</div>
+<div class="row">
+    <div class="col-md-12 col-lg-6 border border-dark">
+        @TeamName Trooper
+    </div>
+    <div class="col-md-12 col-lg-6 border border-dark">
+        @(T1?.UserName ?? "TBD")
+    </div>
+</div>
+<div class="row">
+    <div class="col-md-12 col-lg-6 border border-dark">
+        @TeamName Trooper
+    </div>
+    <div class="col-md-12 col-lg-6 border border-dark">
+        @(T2?.UserName ?? "TBD")
+    </div>
+</div>
+@foreach(var t in Additional)
+{
+<div class="row">
+    <div class="col-md-12 col-lg-6 border border-dark">
+        @TeamName Trooper
+    </div>
+    <div class="col-md-12 col-lg-6 border border-dark">
+        @(t?.UserName ?? "TBD")
+    </div>
+</div>
+}
+<div class="row">
+    <div class="col-md-12 col-lg-6 border border-dark">
+        @TeamName Medic
+    </div>
+    <div class="col-md-12 col-lg-6 border border-dark">
+        @(Team.Medic?.UserName ?? "TBD")
+    </div>
+</div>
+
+@code {
+    [Parameter]
+    public string TeamName { get; set; }
+    [Parameter]
+    public TeamData Team { get; set; }
+
+    private Trooper? T1 { get; set; } = null;
+    private Trooper? T2 { get; set; } = null;
+    private List<Trooper> Additional { get; set; } = new();
+
+    protected override void OnParametersSet()
+    {
+        base.OnParametersSet();
+
+        int c = 0;
+        foreach(var t in Team.Troopers)
+        {
+            if (c == 0)
+                T1 = t;
+            else if (c == 1)
+                T2 = t;
+            else
+                Additional.Add(t);
+
+            c++;
+        }
+    }
+}

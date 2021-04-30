@@ -1,0 +1,19 @@
+﻿@if (Trooper is not null)
+{
+<td>@Trooper.Id</td>
+<td>@Trooper.UserName</td>
+<td>@Trooper.Slot.ToString()</td>
+<td>@Trooper.Role.ToString()</td>
+<AuthorizeView Policy="RequireClerk">
+    <Authorized>
+        <td>
+            <a href="/roster/clerk?edit=@Trooper.Id">Edit</a>
+        </td>
+    </Authorized>
+</AuthorizeView>
+}
+
+@code {
+    [Parameter]
+    public Trooper? Trooper { get; set; }
+}

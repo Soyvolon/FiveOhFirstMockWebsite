@@ -1,0 +1,46 @@
+﻿<div class="row">
+    <div class="col-sm-12 col-md-12 col-lg-12">
+        <b>@CompanyName @PlatoonNumber-@Number</b>
+    </div>
+</div>
+<div class="row">
+    <div class="col-md-12 col-lg-6 border border-dark">
+        Squad Lead
+    </div>
+    <div class="col-md-12 col-lg-6 border border-dark">
+        @(Squad.Lead?.UserName ?? "TBD")
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-12 col-lg-6 border border-dark">
+        Squad RT
+    </div>
+    <div class="col-md-12 col-lg-6 border border-dark">
+        @(Squad.RT?.UserName ?? "TBD")
+    </div>
+</div>
+
+<TeamListing Team="Squad.Teams[0]" TeamName="Alpha" />
+
+<TeamListing Team="Squad.Teams[1]" TeamName="Bravo" />
+
+<div class="row">
+    <div class="col-md-12 col-lg-6 border border-dark">
+        Squad ARC
+    </div>
+    <div class="col-md-12 col-lg-6 border border-dark">
+        @(Squad.ARC?.UserName ?? "TBD")
+    </div>
+</div>
+
+@code {
+    [CascadingParameter(Name = "PlatoonNumber")]
+    public int PlatoonNumber { get; set; }
+    [CascadingParameter(Name = "CompanyName")]
+    public string CompanyName { get; set; }
+    [Parameter]
+    public int Number { get; set; }
+    [Parameter]
+    public SquadData Squad { get; set; }
+}

@@ -1,0 +1,62 @@
+﻿
+<div class="row">
+    <div class="col-md-6 col-sm-12 border border-dark">
+        Company Commander
+    </div>
+    <div class="col-md-6 col-sm-12 border border-dark">
+        @(Company.Commander?.UserName ?? "TBD")
+    </div>
+</div>
+<div class="row">
+    <div class="col-md-6 col-sm-12 border border-dark">
+        Company Executive Officer
+    </div>
+    <div class="col-md-6 col-sm-12  border border-dark">
+        @(Company.XO?.UserName ?? "TBD")
+    </div>
+</div>
+<div class="row border-dark">
+    <div class="col-md-6 col-sm-12 border border-dark">
+        Company NCOIC
+    </div>
+    <div class="col-md-6 col-sm-12 border border-dark">
+        @(Company.NCOIC?.UserName ?? "TBD")
+    </div>
+</div>
+<div class="row border-dark">
+    <div class="col-md-6 col-sm-12 border border-dark">
+        Company Medic
+    </div>
+    <div class="col-md-6 col-sm-12 border border-dark">
+        @(Company.Medic?.UserName ?? "TBD")
+    </div>
+</div>
+<div class="row">
+    <div class="col-md-6 col-sm-12 border border-dark">
+        Company RT
+    </div>
+    <div class="col-md-6 col-sm-12 border border-dark">
+        @(Company.RT?.UserName ?? "TBD")
+    </div>
+</div>
+<div class="row">
+    <div class="col-md-6 col-sm-12 border border-dark">
+        Company ARC
+    </div>
+    <div class="col-md-6 col-sm-12 border border-dark">
+        @(Company.ARC?.UserName ?? "TBD")
+    </div>
+</div>
+<div class="row">
+    <div class="col-md-6 col-sm-12 border border-dark">
+        Company Adjutant
+    </div>
+    <div class="col-md-6 col-sm-12 border border-dark">
+        @(Company.Adjutant?.UserName ?? "TBD")
+    </div>
+</div>
+
+@code {
+    [Parameter]
+    public CompanyData Company { get; set; }
+}

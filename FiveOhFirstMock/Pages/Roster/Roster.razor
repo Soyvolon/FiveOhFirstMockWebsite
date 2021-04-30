@@ -1,0 +1,74 @@
+﻿@page "/roster"
+@inject RosterService _roster;
+
+<h3>Roster</h3>
+
+<div class="container">
+    <div class="row">
+
+    </div>
+    <div class="row">
+        @if (Troopers is not null)
+        {
+            <table class="table table-hover">
+                <thead>
+                    <tr>
+                        <th scope="col">Birth Number</th>
+                        <th scope="col">Nickname</th>
+                        <th scope="col">Unit</th>
+                        <th scope="col">Role</th>
+                        <AuthorizeView Policy="RequireClerk">
+                            <Authorized>
+                                <th scope="col"></th>
+                            </Authorized>
+                        </AuthorizeView>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var t in Filtered)
+                    {
+                        if (odd)
+                        {
+                            <tr class="table-light">
+                                <RosterRow Trooper="t" />
+                            </tr>
+                            
+                            odd = !odd;
+                        }
+                        else
+                        {
+                            <tr class="table-info">
+                                <RosterRow Trooper="t" />
+                            </tr>
+                            
+                            odd = !odd;
+                        }
+                    }
+                </tbody>
+            </table>
+        }
+        else
+        {
+            <p><em>Loading...</em></p>
+        }
+    </div>
+</div>
+
+@code {
+    public bool odd = true;
+    public List<Trooper>? Troopers = null;
+    public List<Trooper> Filtered = new();
+
+    protected override async Task OnParametersSetAsync()
+    {
+        await base.OnParametersSetAsync();
+
+        Troopers = await _roster.GetFullRosterAsync();
+        PopulateFilteredList();
+    }
+
+    protected void PopulateFilteredList()
+    {
+        Filtered = Troopers;
+    }
+}

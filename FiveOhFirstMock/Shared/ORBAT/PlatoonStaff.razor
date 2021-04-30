@@ -1,0 +1,45 @@
+﻿<div class="row">
+    <div class="col-md-6 col-sm-12 border border-dark">
+        Platoon Commander
+    </div>
+    <div class="col-md-6 col-sm-12 border border-dark">
+        @(Platoon.Commander?.UserName ?? "TBD")
+    </div>
+</div>
+<div class="row">
+    <div class="col-md-6 col-sm-12 border border-dark">
+        Platoon Sergeant-Major
+    </div>
+    <div class="col-md-6 col-sm-12  border border-dark">
+        @(Platoon.SergeantMajor?.UserName ?? "TBD")
+    </div>
+</div>
+<div class="row border-dark">
+    <div class="col-md-6 col-sm-12 border border-dark">
+        Platoon Medic
+    </div>
+    <div class="col-md-6 col-sm-12 border border-dark">
+        @(Platoon.Medic?.UserName ?? "TBD")
+    </div>
+</div>
+<div class="row">
+    <div class="col-md-6 col-sm-12 border border-dark">
+        Platoon RT
+    </div>
+    <div class="col-md-6 col-sm-12 border border-dark">
+        @(Platoon.RT?.UserName ?? "TBD")
+    </div>
+</div>
+<div class="row">
+    <div class="col-md-6 col-sm-12 border border-dark">
+        Platoon ARC
+    </div>
+    <div class="col-md-6 col-sm-12 border border-dark">
+        @(Platoon.ARC?.UserName ?? "TBD")
+    </div>
+</div>
+
+@code {
+    [Parameter]
+    public PlatoonData Platoon { get; set; }
+}

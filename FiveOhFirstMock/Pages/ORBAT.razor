@@ -1,0 +1,41 @@
+﻿@page "/orbat"
+@inject RosterService _roster;
+
+<h3>ORBAT</h3>
+
+<hr />
+
+<div class="container text-center justify-content-center">
+    @if (Orbat is not null)
+    {
+        @* Hailstorm *@
+
+
+
+        @* Companys *@
+
+        <CompanyListing Company="Orbat.Avalanche" Name="Avalanche"/>
+
+        <CompanyListing Company="Orbat.Cyclone" Name="Cyclone"/>
+
+        <CompanyListing Company="Orbat.Acklay" Name="Acklay"/>
+
+        @* Detachments *@
+
+    }
+    else
+    {
+        <p><em>Loading...</em></p>
+    }
+</div>
+
+@code {
+    public OrbatData? Orbat { get; set; }
+
+    protected override async Task OnParametersSetAsync()
+    {
+        await base.OnParametersSetAsync();
+
+        Orbat = await _roster.GetOrbatAsymc();
+    }
+}
