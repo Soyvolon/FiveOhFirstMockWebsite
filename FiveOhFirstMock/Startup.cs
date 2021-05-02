@@ -107,6 +107,10 @@ namespace FiveOhFirstMock
             #region Example Tools
             services.AddScoped<TestDataService>();
             #endregion
+
+            #region Other Tools
+            services.AddScoped<IRefreshRequestService, RefreshRequestService>();
+            #endregion
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

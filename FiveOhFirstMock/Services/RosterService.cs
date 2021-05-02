@@ -1,5 +1,7 @@
 ﻿using FiveOhFirstMock.Data;
+using FiveOhFirstMock.Data.Enums;
 using FiveOhFirstMock.Data.Live;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using System;
@@ -44,6 +46,57 @@ namespace FiveOhFirstMock.Services
             });
 
             return data;
+        }
+
+        public async Task UpdateAsync(Trooper updateData, bool clerk = false)
+        {
+            var scope = _services.CreateScope();
+            var db = scope.ServiceProvider.GetRequiredService<UserManager<Trooper>>();
+            var user = await db.FindByIdAsync(updateData.Id.ToString());
+
+            if(user is not null)
+            {
+                user.Slot = updateData.Slot;
+                user.Team = updateData.Team;
+                user.Role = updateData.Role;
+                user.Flight = updateData.Flight;
+                user.CShops = updateData.CShops;
+
+                await db.UpdateAsync(user);
+
+                var claims = await db.GetClaimsAsync(user);
+                var slotClaim = claims.FirstOrDefault(x => x.Type == "Slotted");
+                if (user.Slot >= Slot.InactiveReserve)
+                {
+                    if(slotClaim is not null)
+                    {
+                        await db.RemoveClaimAsync(user, slotClaim);
+                    }
+                }
+                else if (user.Slot <= Slot.InactiveReserve)
+                {
+                    if(slotClaim is null)
+                    {
+                        await db.AddClaimAsync(user, new("Slotted", DateTime.Now.ToShortDateString()));
+                    }
+                    else
+                    {
+                        await db.ReplaceClaimAsync(user, slotClaim, new("Slotted", DateTime.Now.ToShortDateString()));
+                    }
+                }
+
+                var clerkClaim = claims.FirstOrDefault(x => x.Type == "Clerk");
+                if(clerk)
+                {
+                    if(clerkClaim is null)
+                        await db.AddClaimAsync(user, new("Clerk", "Roster"));
+                }
+                else
+                {
+                    if (clerkClaim is not null)
+                        await db.RemoveClaimAsync(user, clerkClaim);
+                }
+            }
         }
     }
 }

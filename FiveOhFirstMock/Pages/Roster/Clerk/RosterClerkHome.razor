@@ -1,8 +1,142 @@
 ﻿@page "/roster/clerk"
+@inject RosterService _roster;
+@inject IAuthorizationService _auth;
+@inject NavigationManager _nav; 
+@inject IRefreshRequestService _refresh; 
 
-<AuthorizeView>
+<AuthorizeView Policy="RequireClerk">
     <Authorized>
-        <h3>RosterClerkHome</h3>
+        <h3>Roster Clerk Home</h3>
+        <div class="container">
+            <EditForm Context="roster_clerk_edit_context" Model="@trooper">
+                <div class="row">
+                    <div class="col-3">
+                        All IDs
+                        <InputSelect @bind-Value="trooper.Id" @oninput="IdSelectionChanged" disabled="@IsEditing" class="form-control h-100" multiple="1" >
+                        @foreach(var i in AllTroopers.Where(x => x.Key.StartsWith(ToEdit)))
+                        {
+                            <option value="@i.Key" selected="@IsEditing">@i.Key</option>
+                        }
+                        </InputSelect>
+                    </div>
+                    <div class="col-6">
+                        <div class="row">
+                            <DataAnnotationsValidator />
+                            <ValidationSummary />
+                            @if (Errors.Count > 0)
+                            {
+                            <div class="p-2 bg-danger mr-1 col">
+                                <ul>
+                                @foreach(var e in Errors)
+                                {
+                                    <li>@e</li>
+                                }
+                                </ul>
+                            </div>
+                            }
+                        </div>
+                        <div class="row">
+                            <div class="col-6">
+                                <label for="id-selector">Birth Number</label>
+                                <InputText id="id-selector" @bind-Value="ToEdit" disabled="@IsEditing" class="form-control" @oninput="IdSelectionChanged"/>
+                            </div>
+                            <div class="col-6">
+                                <label for="username">Nickname</label>
+                                <InputText id="username" @bind-Value="EditNick" disabled="@IsEditing" class="form-control" @oninput="NicknameSelectionChanged" />
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col">
+                                <hr />
+                                <button class="btn btn-primary btn-block" @onclick="async (x) => await EditButtonPressed()" disabled="@IsEditing">Edit</button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-3">
+                        All Nicknames
+                        <InputSelect @bind-Value="trooper.UserName" disabled="@IsEditing" class="form-control h-100" multiple="1" @oninput="NicknameSelectionChanged" >
+                            @foreach (var t in AllTroopers.Where(x => x.Value.UserName.StartsWith(EditNick)))
+                            {
+                                <option value="@t.Value.UserName" selected="@IsEditing">@t.Value.UserName</option>
+                            }
+                        </InputSelect>
+                    </div>
+                </div>
+                <hr />
+                @if (IsEditing)
+                {
+                <div class="container align-content-center">
+                    <div class="row">
+                        <div class="col-lg-4 col-md-8 col-sm-12 p-1">
+                            <label for="role-selection">Role</label>
+                            <InputSelect @bind-Value="trooper.Role" id="role-selection" class="form-control">
+                                @foreach (var v in Enum.GetValues(typeof(Role)))
+                                {
+                                    <option value="@v" selected="@((Role)v == trooper.Role)">@v</option>
+                                }
+                            </InputSelect>
+                        </div>
+                        @if ((trooper.Role == Role.Lead || trooper.Role == Role.Medic || trooper.Role == Role.Trooper)
+                          && !((int)trooper.Slot % 10 == 0 || (int)trooper.Slot / 10 % 10 == 0))
+                        {
+                        <div class="col-lg-4 col-md-8 col-sm-12 p-1">
+                            <label for="team-selection">Team</label>
+                            <InputSelect @bind-Value="trooper.Team" id="team-selection" class="form-control">
+                                @foreach (var v in Enum.GetValues(typeof(Team)))
+                                {
+                                <option value="@v" selected="@((Team)v == trooper.Team)">@v</option>
+                                }
+                            </InputSelect>
+                        </div>
+                        }
+                        <div class="col-lg-4 col-md-8 col-sm-12 p-1">
+                            <label for="slot-selection">Slot</label>
+                            <InputSelect @bind-Value="trooper.Slot" id="slot-selection" class="form-control">
+                                @foreach (var v in Enum.GetValues(typeof(Slot)))
+                                {
+                                    <option value="@v" selected="@((Slot)v == trooper.Slot)">@v</option>
+                                }
+                            </InputSelect>
+                        </div>
+                    </div>
+                    <div class="row">
+                        @if (trooper.Slot >= Slot.Razor && trooper.Slot < Slot.ActiveReserve)
+                        {
+                        <div class="col-lg-4 col-md-8 col-sm-12 p-1">
+                            <label for="slot-selection">Flight</label>
+                            <InputSelect @bind-Value="trooper.Flight" id="slot-selection" class="form-control">
+                                @foreach (var v in Enum.GetValues(typeof(Flight)))
+                                {
+                                <option value="@v" selected="@((Flight)v == trooper.Flight)">@v</option>
+                                }
+                            </InputSelect>
+                        </div>
+                        }
+                        <div class="col-lg-4 col-md-8 col-sm-12 p-1">
+                            <label for="slot-selection">C-Shops</label>
+                            <InputSelect @bind-Value="trooper.CShops" multiple="" id="slot-selection" class="form-control">
+                                @foreach (var v in Enum.GetValues(typeof(CShop)))
+                                {
+                                <option value="@v" selected="@((CShop)v == trooper.CShops)">@v</option>
+                                }
+                            </InputSelect>
+                        </div>
+                        <div class="col-lg-4 col-md-8 col-sm-12 p-1">
+                            <div class="form-group form-check">
+                                <label for="clerk-button">Is a Clerk?</label>
+                                <InputCheckbox @bind-Value="IsClerk" class="form-control" id="clerk-button" />
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col p-1">
+                            <button class="btn btn-outline-primary btn-block" @onclick="async (x) => await SaveButtonPressed()">Save Changes</button> 
+                        </div>
+                    </div>
+                </div>
+                }
+            </EditForm>
+        </div>
     </Authorized>
     <NotAuthorized>
         <b>You don't have acces to view this resource. Go <a href="/">home</a>.</b>
@@ -10,5 +144,144 @@
 </AuthorizeView>
 
 @code {
+    [CascadingParameter]
+    public Task<AuthenticationState> authStateTask { get; set; }
 
+    protected bool IsEditing { get; set; } = false;
+    protected string ToEdit { get; set; } = "";
+    protected string EditNick { get; set; } = "";
+
+    protected ConcurrentDictionary<string, Trooper> AllTroopers { get; set; } = new();
+    protected Trooper trooper { get; set; } = new();
+
+    protected List<string> Errors { get; set; } = new();
+
+    protected bool IsClerk { get; set; } = false;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await base.OnInitializedAsync();
+
+        var user = (await authStateTask).User;
+
+        if((await _auth.AuthorizeAsync(user, "RequireClerk")).Succeeded)
+        {
+            if(QueryHelpers.ParseQuery(_nav.ToAbsoluteUri(_nav.Uri).Query)
+                .TryGetValue("edit", out var edit))
+            {
+                IsEditing = true;
+                ToEdit = edit;
+            }
+        }
+
+        _refresh.RefreshRequested += RefreshMe;
+    }
+
+    protected override async Task OnParametersSetAsync()
+    {
+        await base.OnParametersSetAsync();
+
+        var dict = (await _roster.GetFullRosterAsync()).ToDictionary(x => x.Id.ToString());
+        AllTroopers = new(dict);
+
+        if(IsEditing)
+        {
+            if(AllTroopers.TryGetValue(ToEdit, out var t))
+            {
+                trooper = t;
+                EditNick = t.UserName;
+            }
+        }
+    }
+
+    private void RefreshMe()
+    {
+        StateHasChanged();
+    }
+
+    protected Task IdSelectionChanged(ChangeEventArgs e)
+    {
+        ToEdit = Convert.ToString(e.Value) ?? "";
+        EditNick = "";
+
+        _refresh.CallRequestRefresh();
+
+        return Task.CompletedTask;
+    }
+
+    protected Task NicknameSelectionChanged(ChangeEventArgs e)
+    {
+        EditNick = Convert.ToString(e.Value) ?? "";
+        ToEdit = "";
+
+        _refresh.CallRequestRefresh();
+
+        return Task.CompletedTask;
+    }
+
+    protected Task EditButtonPressed()
+    {
+        IsEditing = false;
+        Errors.Clear();
+
+        if (string.IsNullOrWhiteSpace(ToEdit))
+        {
+            if(string.IsNullOrWhiteSpace(EditNick))
+            {
+                Errors.Add("Selected a Trooper Birth Number or Username." );
+            }
+            else
+            {
+                var pair = AllTroopers.FirstOrDefault(x => x.Value.UserName == EditNick);
+                if(pair.Value is not null)
+                {
+                    IsEditing = true;
+                    trooper = pair.Value;
+                }
+                else
+                {
+                    Errors.Add("The selected useranme does not exsist." );
+                }
+            }
+        }
+        else
+        {
+            if (AllTroopers.TryGetValue(ToEdit, out var t))
+            {
+                trooper = t;
+                IsEditing = true;
+            }
+            else
+            {
+                Errors.Add("The entered birth number does not exsist.");
+            }
+        }
+        if(IsEditing)
+        {
+            ToEdit = trooper.Id.ToString();
+            EditNick = trooper.UserName;
+        }
+        else
+        {
+            ToEdit = "";
+            EditNick = "";
+        }
+
+        _refresh.CallRequestRefresh();
+
+        return Task.CompletedTask;
+    }
+
+    protected async Task SaveButtonPressed()
+    {
+        await _roster.UpdateAsync(trooper, IsClerk);
+
+        trooper = new();
+        ToEdit = "";
+        EditNick = "";
+        IsEditing = false;
+        Errors.Clear();
+
+        _refresh.CallRequestRefresh();
+    }
 }
