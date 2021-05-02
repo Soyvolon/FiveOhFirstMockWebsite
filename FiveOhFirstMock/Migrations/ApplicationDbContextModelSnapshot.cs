@@ -29,9 +29,6 @@ namespace FiveOhFirstMock.Migrations
                     b.Property<int>("AccessFailedCount")
                         .HasColumnType("integer");
 
-                    b.Property<long>("CShops")
-                        .HasColumnType("bigint");
-
                     b.Property<string>("ConcurrencyStamp")
                         .IsConcurrencyToken()
                         .HasColumnType("text");
@@ -68,6 +65,9 @@ namespace FiveOhFirstMock.Migrations
 
                     b.Property<bool>("PhoneNumberConfirmed")
                         .HasColumnType("boolean");
+
+                    b.Property<long>("Qualifications")
+                        .HasColumnType("bigint");
 
                     b.Property<int>("Role")
                         .HasColumnType("integer");

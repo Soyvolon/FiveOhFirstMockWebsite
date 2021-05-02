@@ -1,0 +1,99 @@
+﻿@page "/trooper/{rawId}"
+@inject RosterService _roster
+
+@if (Loaded)
+{
+    if (Trooper is not null)
+    {
+        <div class="container">
+            <div class="row">
+                <div class="col text-center">
+                    <h1>@Trooper.UserName</h1>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-md-6 col-sm-12 text-center">
+                    Slot: @Trooper.Slot.ToString()
+                </div>
+                <div class="col-md-6 col-sm-12 text-center">
+                    Role: @Trooper.Role.ToString()
+                </div>
+            </div>
+            @if (HasTeam || IsPilot)
+            {
+            <div class="row">
+                @if (HasTeam)
+                {
+                <div class="col text-center">
+                    Team: @Trooper.Team.ToString()
+                </div>
+                }
+                else if (IsPilot)
+                {
+                <div class="col text-center">
+                    Flight: @Trooper.Flight.ToString()
+                </div>
+                }
+            </div>
+            }
+            <div class="row">
+                <div class="col">
+                    <h4 class="text-center">Qualifications</h4>
+                    <div class="list-group">
+                        @foreach (Qualifications q in Enum.GetValues(typeof(Qualifications)))
+                        {
+                            @if ((q & Trooper.Qualifications) == q)
+                            {
+                            <div class="list-group-item">@q.ToString()</div>
+                            }
+                        }
+                    </div>
+                </div>
+            </div>
+            <AuthorizeView Policy="RequireClerk">
+                <Authorized>
+                    <div class="row p-5">
+                        <div class="col">
+                            <a href="/roster/clerk?edit=@Trooper.Id" class="btn btn-block btn-primary">Edit</a>
+                        </div>
+                    </div>
+                </Authorized>
+            </AuthorizeView>
+        </div>
+    }
+    else
+    {
+        <b>No trooper by that ID was found. Go <a href="/">home</a>.</b>
+    }
+}
+else
+{
+    <em>Loading...</em>
+}
+
+@code {
+    [Parameter]
+    public string RawId { get; set; }
+
+    public Trooper? Trooper { get; set; }
+    public bool Loaded { get; set; } = false;
+    public bool IsPilot { get; set; } = false;
+    public bool HasTeam { get; set; } = true;
+
+    protected override async Task OnParametersSetAsync()
+    {
+        Trooper = await _roster.GetTrooperAsync(RawId);
+
+        Loaded = true;
+
+        if (Trooper is not null)
+        {
+            HasTeam = (Trooper.Role == Role.Lead || Trooper.Role == Role.Medic || Trooper.Role == Role.Trooper)
+                && !((int)Trooper.Slot % 10 == 0 || (int)Trooper.Slot / 10 % 10 == 0);
+
+            IsPilot = Trooper.Slot >= Slot.Razor && Trooper.Slot < Slot.ActiveReserve;
+        }
+
+    await base.OnParametersSetAsync();
+}
+}

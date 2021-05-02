@@ -4,7 +4,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 
 namespace FiveOhFirstMock.Migrations
 {
-    public partial class init : Migration
+    public partial class Init : Migration
     {
         protected override void Up(MigrationBuilder migrationBuilder)
         {
@@ -33,7 +33,7 @@ namespace FiveOhFirstMock.Migrations
                     Slot = table.Column<int>(type: "integer", nullable: false),
                     Team = table.Column<int>(type: "integer", nullable: false),
                     Flight = table.Column<int>(type: "integer", nullable: true),
-                    CShops = table.Column<long>(type: "bigint", nullable: false),
+                    Qualifications = table.Column<long>(type: "bigint", nullable: false),
                     UserName = table.Column<string>(type: "character varying(256)", maxLength: 256, nullable: true),
                     NormalizedUserName = table.Column<string>(type: "character varying(256)", maxLength: 256, nullable: true),
                     Email = table.Column<string>(type: "character varying(256)", maxLength: 256, nullable: true),

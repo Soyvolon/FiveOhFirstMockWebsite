@@ -13,6 +13,6 @@ namespace FiveOhFirstMock.Data
         public Slot Slot { get; set; }
         public Team Team { get; set; }
         public Flight? Flight { get; set; } = null;
-        public CShop CShops { get; set; }
+        public Qualifications Qualifications { get; set; }
     }
 }

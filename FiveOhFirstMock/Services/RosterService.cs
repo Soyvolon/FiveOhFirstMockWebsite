@@ -8,6 +8,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
+using System.Security.Claims;
 using System.Threading.Tasks;
 
 namespace FiveOhFirstMock.Services
@@ -48,11 +49,46 @@ namespace FiveOhFirstMock.Services
             return data;
         }
 
+        public async Task<(SquadData?, string?)> GetSquadAsync(ClaimsPrincipal claim)
+        {
+            var scope = _services.CreateScope();
+            var manager = scope.ServiceProvider.GetRequiredService<UserManager<Trooper>>();
+
+            var user = await manager.GetUserAsync(claim);
+
+            if (user.Slot < Slot.Mynock && (int)user.Slot % 10 != 0)
+            {
+                var db = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+                var users = new HashSet<Trooper>();
+                await db.Users.AsNoTracking().ForEachAsync(x =>
+                {
+                    if (x.Slot == user.Slot)
+                        users.Add(x);
+                });
+
+                var data = new SquadData();
+                foreach (var t in users)
+                    data.AssignTrooper(t);
+
+                return (data, user.Slot.ToString());
+            }
+
+            return (null, null);
+        }
+
+        public async Task<Trooper?> GetTrooperAsync(string rawId)
+        {
+            var scope = _services.CreateScope();
+            var manager = scope.ServiceProvider.GetRequiredService<UserManager<Trooper>>();
+            var user = await manager.FindByIdAsync(rawId);
+            return user;
+        }
+
         public async Task UpdateAsync(Trooper updateData, bool clerk = false)
         {
             var scope = _services.CreateScope();
-            var db = scope.ServiceProvider.GetRequiredService<UserManager<Trooper>>();
-            var user = await db.FindByIdAsync(updateData.Id.ToString());
+            var manager = scope.ServiceProvider.GetRequiredService<UserManager<Trooper>>();
+            var user = await manager.FindByIdAsync(updateData.Id.ToString());
 
             if(user is not null)
             {
@@ -60,28 +96,28 @@ namespace FiveOhFirstMock.Services
                 user.Team = updateData.Team;
                 user.Role = updateData.Role;
                 user.Flight = updateData.Flight;
-                user.CShops = updateData.CShops;
+                user.Qualifications = updateData.Qualifications;
 
-                await db.UpdateAsync(user);
+                await manager.UpdateAsync(user);
 
-                var claims = await db.GetClaimsAsync(user);
+                var claims = await manager.GetClaimsAsync(user);
                 var slotClaim = claims.FirstOrDefault(x => x.Type == "Slotted");
                 if (user.Slot >= Slot.InactiveReserve)
                 {
                     if(slotClaim is not null)
                     {
-                        await db.RemoveClaimAsync(user, slotClaim);
+                        await manager.RemoveClaimAsync(user, slotClaim);
                     }
                 }
                 else if (user.Slot <= Slot.InactiveReserve)
                 {
                     if(slotClaim is null)
                     {
-                        await db.AddClaimAsync(user, new("Slotted", DateTime.Now.ToShortDateString()));
+                        await manager.AddClaimAsync(user, new("Slotted", DateTime.Now.ToShortDateString()));
                     }
                     else
                     {
-                        await db.ReplaceClaimAsync(user, slotClaim, new("Slotted", DateTime.Now.ToShortDateString()));
+                        await manager.ReplaceClaimAsync(user, slotClaim, new("Slotted", DateTime.Now.ToShortDateString()));
                     }
                 }
 
@@ -89,12 +125,12 @@ namespace FiveOhFirstMock.Services
                 if(clerk)
                 {
                     if(clerkClaim is null)
-                        await db.AddClaimAsync(user, new("Clerk", "Roster"));
+                        await manager.AddClaimAsync(user, new("Clerk", "Roster"));
                 }
                 else
                 {
                     if (clerkClaim is not null)
-                        await db.RemoveClaimAsync(user, clerkClaim);
+                        await manager.RemoveClaimAsync(user, clerkClaim);
                 }
             }
         }

@@ -113,17 +113,12 @@
                         </div>
                         }
                         <div class="col-lg-4 col-md-8 col-sm-12 p-1">
-                            <label for="slot-selection">C-Shops</label>
-                            <InputSelect @bind-Value="trooper.CShops" multiple="" id="slot-selection" class="form-control">
-                                @foreach (var v in Enum.GetValues(typeof(CShop)))
-                                {
-                                <option value="@v" selected="@((CShop)v == trooper.CShops)">@v</option>
-                                }
-                            </InputSelect>
+                            <label for="slot-selection">Qualifications</label>
+                            <FiveOhFirstMock.Components.FlagInputSelect @bind-Value="trooper.Qualifications" @onchange="(x) => _refresh.CallRequestRefresh()" />
                         </div>
                         <div class="col-lg-4 col-md-8 col-sm-12 p-1">
                             <div class="form-group form-check">
-                                <label for="clerk-button">Is a Clerk?</label>
+                                <label for="clerk-button" class="form-check-label">Is a Clerk?</label>
                                 <InputCheckbox @bind-Value="IsClerk" class="form-control" id="clerk-button" />
                             </div>
                         </div>
@@ -219,69 +214,77 @@
         return Task.CompletedTask;
     }
 
-    protected Task EditButtonPressed()
+    protected async Task EditButtonPressed()
     {
-        IsEditing = false;
-        Errors.Clear();
+        var user = (await authStateTask).User;
 
-        if (string.IsNullOrWhiteSpace(ToEdit))
+        if ((await _auth.AuthorizeAsync(user, "RequireClerk")).Succeeded)
         {
-            if(string.IsNullOrWhiteSpace(EditNick))
+            IsEditing = false;
+            Errors.Clear();
+
+            if (string.IsNullOrWhiteSpace(ToEdit))
             {
-                Errors.Add("Selected a Trooper Birth Number or Username." );
-            }
-            else
-            {
-                var pair = AllTroopers.FirstOrDefault(x => x.Value.UserName == EditNick);
-                if(pair.Value is not null)
+                if (string.IsNullOrWhiteSpace(EditNick))
                 {
-                    IsEditing = true;
-                    trooper = pair.Value;
+                    Errors.Add("Selected a Trooper Birth Number or Username.");
                 }
                 else
                 {
-                    Errors.Add("The selected useranme does not exsist." );
+                    var pair = AllTroopers.FirstOrDefault(x => x.Value.UserName == EditNick);
+                    if (pair.Value is not null)
+                    {
+                        IsEditing = true;
+                        trooper = pair.Value;
+                    }
+                    else
+                    {
+                        Errors.Add("The selected useranme does not exsist.");
+                    }
                 }
-            }
-        }
-        else
-        {
-            if (AllTroopers.TryGetValue(ToEdit, out var t))
-            {
-                trooper = t;
-                IsEditing = true;
             }
             else
             {
-                Errors.Add("The entered birth number does not exsist.");
+                if (AllTroopers.TryGetValue(ToEdit, out var t))
+                {
+                    trooper = t;
+                    IsEditing = true;
+                }
+                else
+                {
+                    Errors.Add("The entered birth number does not exsist.");
+                }
             }
-        }
-        if(IsEditing)
-        {
-            ToEdit = trooper.Id.ToString();
-            EditNick = trooper.UserName;
-        }
-        else
-        {
-            ToEdit = "";
-            EditNick = "";
-        }
+            if (IsEditing)
+            {
+                ToEdit = trooper.Id.ToString();
+                EditNick = trooper.UserName;
+            }
+            else
+            {
+                ToEdit = "";
+                EditNick = "";
+            }
 
-        _refresh.CallRequestRefresh();
-
-        return Task.CompletedTask;
+            _refresh.CallRequestRefresh();
+        }
     }
 
     protected async Task SaveButtonPressed()
     {
-        await _roster.UpdateAsync(trooper, IsClerk);
+        var user = (await authStateTask).User;
 
-        trooper = new();
-        ToEdit = "";
-        EditNick = "";
-        IsEditing = false;
-        Errors.Clear();
+        if ((await _auth.AuthorizeAsync(user, "RequireClerk")).Succeeded)
+        {
+            await _roster.UpdateAsync(trooper, IsClerk);
 
-        _refresh.CallRequestRefresh();
+            trooper = new();
+            ToEdit = "";
+            EditNick = "";
+            IsEditing = false;
+            Errors.Clear();
+
+            _refresh.CallRequestRefresh();
+        }
     }
 }

@@ -1,0 +1,55 @@
+﻿<div class="list-group w-100">
+    <a href="/trooper/@(SquadData.Lead?.Id ?? 0)" class="list-group-item list-group-item-action active">Squad Leader: @(SquadData.Lead?.UserName ?? "")</a>
+    <a href="/trooper/@(SquadData.RT?.Id ?? 0)" class="list-group-item list-group-item-action">RTO: @(SquadData.RT?.UserName ?? "")</a>
+    <a href="/trooper/@(SquadData.Teams[0].Lead?.Id ?? 0)" class="list-group-item list-group-item-action border-danger">Alpha Team Leader: @(SquadData.Teams[0]?.Lead?.UserName ?? "")</a>
+    <a href="/trooper/@(A1?.Id ?? 0)" class="list-group-item list-group-item-action">Alpha Trooper: @(A1?.UserName ?? "")</a>
+    <a href="/trooper/@(A2?.Id ?? 0)" class="list-group-item list-group-item-action">Alpha Trooper: @(A2?.UserName ?? "")</a>
+    @foreach (var t in RemaningATroopers)
+    {
+        <a href="/trooper/@(t.Id)" class="list-group-item list-group-item-action">Alpha Trooper: @(t.UserName ?? "")</a>
+    }
+    <a href="/trooper/@(SquadData.Teams[0].Medic?.Id ?? 0)" class="list-group-item list-group-item-action">Alpha Team Medic: @(SquadData.Teams[0]?.Medic?.UserName ?? "")</a>
+    <a href="/trooper/@(SquadData.Teams[1].Lead?.Id ?? 0)" class="list-group-item list-group-item-action border-primary">Bravo Team Leader: @(SquadData.Teams[0]?.Lead?.UserName ?? "")</a>
+    <a href="/trooper/@(B1?.Id ?? 0)" class="list-group-item list-group-item-action">Bravo Trooper: @(B1?.UserName ?? "")</a>
+    <a href="/trooper/@(B2?.Id ?? 0)" class="list-group-item list-group-item-action">Bravo Trooper: @(B2?.UserName ?? "")</a>
+    @foreach (var t in RemaningBTroopers)
+    {
+    <a href="/trooper/@(t.Id)" class="list-group-item list-group-item-action">Bravo Trooper: @(t.UserName ?? "")</a>
+    }
+    <a href="/trooper/@(SquadData.Teams[1].Medic?.Id ?? 0)" class="list-group-item list-group-item-action">Bravo Team Medic: @(SquadData.Teams[0]?.Medic?.UserName ?? "")</a>
+</div>
+
+@code {
+    [Parameter]
+    public SquadData SquadData { get; set; }
+
+    public Trooper? A1 = null;
+    public Trooper? A2 = null;
+    public List<Trooper> RemaningATroopers = new();
+    public Trooper? B1 = null;
+    public Trooper? B2 = null;
+    public List<Trooper> RemaningBTroopers = new();
+
+    protected override void OnParametersSet()
+    {
+        for(int i = 0; i < SquadData.Teams[0].Troopers.Count; i++)
+        {
+            if (i == 0)
+                A1 = SquadData.Teams[0].Troopers[i];
+            else if (i == 1)
+                A2 = SquadData.Teams[0].Troopers[i];
+            else
+                RemaningATroopers.Add(SquadData.Teams[0].Troopers[i]);
+        }
+
+        for (int i = 0; i < SquadData.Teams[1].Troopers.Count; i++)
+        {
+            if (i == 0)
+                B1 = SquadData.Teams[1].Troopers[i];
+            else if (i == 1)
+                B2 = SquadData.Teams[1].Troopers[i];
+            else
+                RemaningBTroopers.Add(SquadData.Teams[1].Troopers[i]);
+        }
+    }
+}

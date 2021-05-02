@@ -1,0 +1,50 @@
+﻿@page "/mysquad"
+@inject RosterService _roster;
+
+<AuthorizeView Policy="RequireSlotted">
+    <Authorized>
+        @if(Loaded)
+        {
+            @if(SquadData is not null)
+            {
+                <h1>@Squad</h1>
+
+                <SquadDisplay SquadData="SquadData" /> 
+            }
+            else
+            {
+                <em>No squad data was found.</em>
+            }
+        }
+        else
+        {
+            <em>Loading...</em>
+        }
+    </Authorized>
+    <NotAuthorized>
+        <b>You don't have acces to view this resource. Go <a href="/">home</a>.</b>
+    </NotAuthorized>
+</AuthorizeView>
+
+@code {
+    [CascadingParameter]
+    public Task<AuthenticationState> authStateTask { get; set; }
+
+    public SquadData? SquadData { get; set; }
+    public string Squad { get; set; }
+    public bool Loaded { get; set; } = false;
+
+    protected override async Task OnParametersSetAsync()
+    {
+        await base.OnParametersSetAsync();
+
+        var user = (await authStateTask).User;
+
+        var dat = await _roster.GetSquadAsync(user);
+
+        SquadData = dat.Item1;
+        Squad = dat.Item2 ?? "";
+
+        Loaded = true;
+    }
+}
