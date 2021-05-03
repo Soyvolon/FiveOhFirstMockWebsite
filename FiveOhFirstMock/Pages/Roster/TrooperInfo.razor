@@ -5,61 +5,53 @@
 {
     if (Trooper is not null)
     {
-        <div class="container">
-            <div class="row">
-                <div class="col text-center">
-                    <h1>@Trooper.UserName</h1>
-                </div>
+    <div class="card mb-3 w-100">
+        <h3 class="card-header">@Trooper.UserName</h3>
+            <div class="card-body">
+                    <h5 class="card-subtitle">Slot</h5>
+                    <div class="card-text">@Trooper.Slot.ToString()</div>
             </div>
-            <div class="row">
-                <div class="col-md-6 col-sm-12 text-center">
-                    Slot: @Trooper.Slot.ToString()
-                </div>
-                <div class="col-md-6 col-sm-12 text-center">
-                    Role: @Trooper.Role.ToString()
-                </div>
+            <div class="card-body">
+                <h5 class="card-subtitle">Role</h5>
+                <div class="card-text">@Trooper.Role.ToString()</div>
             </div>
-            @if (HasTeam || IsPilot)
-            {
-            <div class="row">
+        @if (HasTeam || IsPilot)
+        {
                 @if (HasTeam)
                 {
-                <div class="col text-center">
-                    Team: @Trooper.Team.ToString()
-                </div>
+                    <div class="card-body">
+                        <div class="card-subtitle">Team</div>
+                        <div class="card-text">@Trooper.Team.ToString()</div>
+                    </div>
                 }
                 else if (IsPilot)
                 {
-                <div class="col text-center">
-                    Flight: @Trooper.Flight.ToString()
-                </div>
+                    <div class="card-body">
+                        <div class="card-subtitle">Flight</div>
+                        <div class="card-text">@Trooper.Flight.ToString()</div>
+                    </div>
                 }
-            </div>
+        }
+        <h5 class="card-header">Qualifications</h5>
+        <ul class="list-group list-group-flush">
+            @foreach (Qualifications q in Enum.GetValues(typeof(Qualifications)))
+            {
+                @if ((q & Trooper.Qualifications) == q)
+                {
+                    <li class="list-group-item">@q.ToString()</li>
+                }
             }
-            <div class="row">
-                <div class="col">
-                    <h4 class="text-center">Qualifications</h4>
-                    <div class="list-group">
-                        @foreach (Qualifications q in Enum.GetValues(typeof(Qualifications)))
-                        {
-                            @if ((q & Trooper.Qualifications) == q)
-                            {
-                            <div class="list-group-item">@q.ToString()</div>
-                            }
-                        }
+        </ul>
+        <AuthorizeView Policy="RequireClerk">
+            <Authorized>
+                <div class="row">
+                    <div class="card-body col">
+                        <a href="/roster/clerk?edit=@Trooper.Id" class="btn btn-block btn-primary">Edit</a>
                     </div>
                 </div>
-            </div>
-            <AuthorizeView Policy="RequireClerk">
-                <Authorized>
-                    <div class="row p-5">
-                        <div class="col">
-                            <a href="/roster/clerk?edit=@Trooper.Id" class="btn btn-block btn-primary">Edit</a>
-                        </div>
-                    </div>
-                </Authorized>
-            </AuthorizeView>
-        </div>
+            </Authorized>
+        </AuthorizeView>
+    </div>
     }
     else
     {

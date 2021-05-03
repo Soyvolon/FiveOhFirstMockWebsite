@@ -1,17 +1,37 @@
 ﻿@page "/roster"
 @inject RosterService _roster;
+@inject IRefreshRequestService _refresh;
 
 <h3>Roster</h3>
 
 <div class="container">
     <div class="row">
-
-    </div>
-    <div class="row">
         @if (Troopers is not null)
         {
+        <EditForm class="form-inline" Model="Search">
             <table class="table table-hover">
                 <thead>
+                    <tr>
+                        <td class="form-group">
+                            <button class="@(Search.Ascending ? "oi-arrow-top" : "oi-arrow-bottom") oi btn" aria-hidden="true" @onclick="IdSortChanged"></button>
+                            <InputText class="form-control form-inline" @bind-Value="Search.IdFilter" id="id-roster-filter" @oninput="IdChanged" />
+                        </td>
+                        <td>
+                            <InputText class="form-control form-inline" @bind-Value="Search.UsernameFilter" id="id-username-filter" @oninput="UsernameChanged" />
+                        </td>
+                        <td>
+                            <InputText class="form-control form-inline" @bind-Value="Search.UnitFilter" id="id-unit-filter" @oninput="UnitChanged" />
+                        </td>
+                        <td>
+                            <InputText class="form-control form-inline" @bind-Value="Search.RoleFilter" id="id-role-filter" @oninput="RoleChanged" />
+                        </td>
+                        <td></td>
+                        <AuthorizeView Policy="RequireClerk">
+                            <Authorized Context="authContext">
+                                <td></td>
+                            </Authorized>
+                        </AuthorizeView>
+                    </tr>
                     <tr>
                         <th scope="col">Birth Number</th>
                         <th scope="col">Nickname</th>
@@ -19,7 +39,7 @@
                         <th scope="col">Role</th>
                         <th scope="col"></th>
                         <AuthorizeView Policy="RequireClerk">
-                            <Authorized>
+                            <Authorized Context="authContext">
                                 <th scope="col"></th>
                             </Authorized>
                         </AuthorizeView>
@@ -33,7 +53,7 @@
                             <tr class="table-light">
                                 <RosterRow Trooper="t" />
                             </tr>
-                            
+
                             odd = !odd;
                         }
                         else
@@ -41,18 +61,20 @@
                             <tr class="table-info">
                                 <RosterRow Trooper="t" />
                             </tr>
-                            
+
                             odd = !odd;
                         }
                     }
                 </tbody>
             </table>
-        }
-        else
-        {
-            <p><em>Loading...</em></p>
-        }
-    </div>
+        </EditForm>
+                }
+                else
+                {
+                <p><em>Loading...</em></p>
+                }
+        </div>
+
 </div>
 
 @code {
@@ -60,16 +82,74 @@
     public List<Trooper>? Troopers = null;
     public List<Trooper> Filtered = new();
 
+    public RosterSearchData Search { get; set; } = new();
+
     protected override async Task OnParametersSetAsync()
     {
         await base.OnParametersSetAsync();
+
+        _refresh.RefreshRequested += RefreshMe;
 
         Troopers = await _roster.GetFullRosterAsync();
         PopulateFilteredList();
     }
 
+    protected void IdChanged(ChangeEventArgs e)
+    {
+        Search.IdFilter = e.Value as string;
+        PopulateFilteredList();
+    }
+
+    protected void UsernameChanged(ChangeEventArgs e)
+    {
+        Search.UsernameFilter = e.Value as string;
+        PopulateFilteredList();
+    }
+
+    protected void UnitChanged(ChangeEventArgs e)
+    {
+        Search.UnitFilter = e.Value as string;
+        PopulateFilteredList();
+    }
+
+    protected void RoleChanged(ChangeEventArgs e)
+    {
+        Search.RoleFilter = e.Value as string;
+        PopulateFilteredList();
+    }
+
+    protected void IdSortChanged(EventArgs e)
+    {
+        Search.Ascending = !Search.Ascending;
+        PopulateFilteredList();
+    }
+
+    public void RefreshMe()
+    {
+        StateHasChanged();
+    }
+
     protected void PopulateFilteredList()
     {
-        Filtered = Troopers;
+        if (Troopers is not null)
+        {
+            List<Trooper> filter = Troopers;
+            if(!string.IsNullOrWhiteSpace(Search.IdFilter))
+                filter = filter.Where(x => x.Id.ToString().StartsWith(Search.IdFilter)).ToList();
+            if (!string.IsNullOrWhiteSpace(Search.UsernameFilter))
+                filter = filter.Where(x => x.UserName.StartsWith(Search.UsernameFilter)).ToList();
+            if (!string.IsNullOrWhiteSpace(Search.UnitFilter))
+                filter = filter.Where(x => x.Slot.ToString().StartsWith(Search.UnitFilter)).ToList();
+            if (!string.IsNullOrWhiteSpace(Search.RoleFilter))
+                filter = filter.Where(x => x.Role.ToString().StartsWith(Search.RoleFilter)).ToList();
+
+            filter.Sort((x, y) => x.Id.CompareTo(y.Id));
+
+            if (!Search.Ascending) filter.Reverse();
+
+            Filtered = filter;
+
+            _refresh.CallRequestRefresh();
+        }
     }
 }
