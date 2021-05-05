@@ -10,7 +10,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace FiveOhFirstMock.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20210502154353_Init")]
+    [Migration("20210504163805_Init")]
     partial class Init
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -100,6 +100,37 @@ namespace FiveOhFirstMock.Migrations
                         .HasDatabaseName("UserNameIndex");
 
                     b.ToTable("AspNetUsers");
+                });
+
+            modelBuilder.Entity("FiveOhFirstMock.Data.TrooperFlag", b =>
+                {
+                    b.Property<int>("FlagId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer")
+                        .HasAnnotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn);
+
+                    b.Property<string>("Author")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<int>("AuthorId")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("Message")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<DateTime>("SubmittedOn")
+                        .HasColumnType("timestamp without time zone");
+
+                    b.Property<int?>("TrooperId")
+                        .HasColumnType("integer");
+
+                    b.HasKey("FlagId");
+
+                    b.HasIndex("TrooperId");
+
+                    b.ToTable("TrooperFlag");
                 });
 
             modelBuilder.Entity("FiveOhFirstMock.Data.TrooperRole", b =>
@@ -231,6 +262,13 @@ namespace FiveOhFirstMock.Migrations
                     b.ToTable("AspNetUserTokens");
                 });
 
+            modelBuilder.Entity("FiveOhFirstMock.Data.TrooperFlag", b =>
+                {
+                    b.HasOne("FiveOhFirstMock.Data.Trooper", null)
+                        .WithMany("Flags")
+                        .HasForeignKey("TrooperId");
+                });
+
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<int>", b =>
                 {
                     b.HasOne("FiveOhFirstMock.Data.TrooperRole", null)
@@ -280,6 +318,11 @@ namespace FiveOhFirstMock.Migrations
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+                });
+
+            modelBuilder.Entity("FiveOhFirstMock.Data.Trooper", b =>
+                {
+                    b.Navigation("Flags");
                 });
 #pragma warning restore 612, 618
         }

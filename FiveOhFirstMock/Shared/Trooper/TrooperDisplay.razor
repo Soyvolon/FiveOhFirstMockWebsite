@@ -1,0 +1,67 @@
+﻿<div class="card mb-3 w-100">
+    <h3 class="card-header">@Trooper.UserName</h3>
+        <div class="card-body">
+                <h5 class="card-subtitle">Slot</h5>
+                <div class="card-text">@Trooper.Slot.ToString()</div>
+        </div>
+        <div class="card-body">
+            <h5 class="card-subtitle">Role</h5>
+            <div class="card-text">@Trooper.Role.ToString()</div>
+        </div>
+    @if (HasTeam || IsPilot)
+    {
+            @if (HasTeam)
+            {
+                <div class="card-body">
+                    <div class="card-subtitle">Team</div>
+                    <div class="card-text">@Trooper.Team.ToString()</div>
+                </div>
+            }
+            else if (IsPilot)
+            {
+                <div class="card-body">
+                    <div class="card-subtitle">Flight</div>
+                    <div class="card-text">@Trooper.Flight.ToString()</div>
+                </div>
+            }
+    }
+    <h5 class="card-header">Qualifications</h5>
+    <ul class="list-group list-group-flush">
+        @foreach (Qualifications q in Enum.GetValues(typeof(Qualifications)))
+        {
+            @if ((q & Trooper.Qualifications) == q)
+            {
+                <li class="list-group-item">@q.ToString()</li>
+            }
+        }
+    </ul>
+    <AuthorizeView Policy="RequireClerk">
+        <Authorized>
+            <div class="row">
+                <div class="card-body col">
+                    <a href="/roster/clerk?edit=@Trooper.Id" class="btn btn-block btn-primary">Edit</a>
+                </div>
+            </div>
+        </Authorized>
+    </AuthorizeView>
+</div>
+
+@code {
+    [Parameter]
+    public Trooper Trooper { get; set; }
+    public bool IsPilot { get; set; } = false;
+    public bool HasTeam { get; set; } = true;
+
+    protected override void OnParametersSet()
+    {
+        base.OnParametersSet();
+        
+        if (Trooper is not null)
+        {
+            HasTeam = (Trooper.Role == Role.Lead || Trooper.Role == Role.Medic || Trooper.Role == Role.Trooper)
+                && !((int)Trooper.Slot % 10 == 0 || (int)Trooper.Slot / 10 % 10 == 0);
+
+            IsPilot = Trooper.Slot >= Slot.Razor && Trooper.Slot < Slot.ActiveReserve;
+        }
+    }
+}

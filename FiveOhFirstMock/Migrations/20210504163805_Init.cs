@@ -160,6 +160,29 @@ namespace FiveOhFirstMock.Migrations
                         onDelete: ReferentialAction.Cascade);
                 });
 
+            migrationBuilder.CreateTable(
+                name: "TrooperFlag",
+                columns: table => new
+                {
+                    FlagId = table.Column<int>(type: "integer", nullable: false)
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                    Author = table.Column<string>(type: "text", nullable: false),
+                    AuthorId = table.Column<int>(type: "integer", nullable: false),
+                    Message = table.Column<string>(type: "text", nullable: false),
+                    SubmittedOn = table.Column<DateTime>(type: "timestamp without time zone", nullable: false),
+                    TrooperId = table.Column<int>(type: "integer", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_TrooperFlag", x => x.FlagId);
+                    table.ForeignKey(
+                        name: "FK_TrooperFlag_AspNetUsers_TrooperId",
+                        column: x => x.TrooperId,
+                        principalTable: "AspNetUsers",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
+                });
+
             migrationBuilder.CreateIndex(
                 name: "IX_AspNetRoleClaims_RoleId",
                 table: "AspNetRoleClaims",
@@ -196,6 +219,11 @@ namespace FiveOhFirstMock.Migrations
                 table: "AspNetUsers",
                 column: "NormalizedUserName",
                 unique: true);
+
+            migrationBuilder.CreateIndex(
+                name: "IX_TrooperFlag_TrooperId",
+                table: "TrooperFlag",
+                column: "TrooperId");
         }
 
         protected override void Down(MigrationBuilder migrationBuilder)
@@ -214,6 +242,9 @@ namespace FiveOhFirstMock.Migrations
 
             migrationBuilder.DropTable(
                 name: "AspNetUserTokens");
+
+            migrationBuilder.DropTable(
+                name: "TrooperFlag");
 
             migrationBuilder.DropTable(
                 name: "AspNetRoles");

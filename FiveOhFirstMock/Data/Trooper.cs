@@ -14,5 +14,6 @@ namespace FiveOhFirstMock.Data
         public Team Team { get; set; }
         public Flight? Flight { get; set; } = null;
         public Qualifications Qualifications { get; set; }
+        public List<TrooperFlag> Flags { get; set; } = new();
     }
 }

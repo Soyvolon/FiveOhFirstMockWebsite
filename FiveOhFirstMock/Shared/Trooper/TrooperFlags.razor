@@ -1,0 +1,112 @@
+﻿@inject RosterService _roster;
+@inject IRefreshRequestService _refresh;
+
+<EditForm class="form-inline border" Model="Flag">
+    <table class="table">
+        <thead>
+            <tr>
+               <td></td>
+               <td></td>
+               <td>
+                  <InputText class="form-control form-inline"  @bind-Value="Flag.Message" />
+               </td>
+               <td class="w-10">
+                   <button class="btn btn-primary" @onclick="async (x) => await OnAddFlag()">Add</button>
+               </td>
+            </tr>
+        </thead>
+        <tbody>
+            @if (CurrentAuthor is not null)
+            {
+                @foreach (var flag in Trooper.Flags)
+                {
+                    <tr>
+                        <td>@flag.SubmittedOn.ToShortDateString()</td>
+                        <td>@flag.Author</td>
+                        <td>@flag.Message</td>
+                        <td>
+                            @if (CurrentAuthor.Id == flag.AuthorId || IsAdmin)
+                            {
+                                <button class="btn oi oi-trash" @onclick="async (x) => await OnDeleteFlag(flag, flag.AuthorId)" aria-hidden="true" />
+                            }
+                        </td>
+                    </tr>
+                }
+            }
+        </tbody>
+    </table>
+</EditForm>
+
+
+@code {
+    [Parameter]
+    public Trooper Trooper { get; set; }
+    protected TrooperFlag Flag { get; set; } = new();
+    protected Trooper CurrentAuthor { get; set; }
+    protected bool IsAdmin { get; set; } = false;
+
+    [CascadingParameter]
+    public Task<AuthenticationState> authStateTask { get; set; }
+
+    protected override async Task OnParametersSetAsync()
+    {
+        await base.OnParametersSetAsync();
+
+        var user = (await authStateTask).User;
+
+        IsAdmin = user.IsInRole("Admin");
+
+        var trooper = await _roster.GetTrooperAsync(user);
+
+        CurrentAuthor = trooper;
+
+        _refresh.RefreshRequested += RefreshMe;
+
+        await _roster.LoadFlagsAsync(Trooper);
+
+        SortFlags();
+    }
+
+    protected void SortFlags()
+        => Trooper.Flags.Sort((x, y) => x.SubmittedOn.CompareTo(y.SubmittedOn));
+
+    protected void RefreshMe()
+    {
+        StateHasChanged();
+    }
+
+    protected async Task OnDeleteFlag(TrooperFlag flag, int author)
+    {
+        if(author == CurrentAuthor.Id)
+        {
+            var res = await _roster.RemoveFlagAsync(Trooper, flag);
+
+            if(res is null) throw new System.Exception("Remove Failed");
+
+            Trooper = res;
+            SortFlags();
+            _refresh.CallRequestRefresh();
+        }
+    }
+
+    protected async Task OnAddFlag()
+    {
+        if(string.IsNullOrWhiteSpace(Flag.Message)) return;
+
+        var res = await _roster.AddFlagAsync(Trooper, new TrooperFlag()
+        {
+            Author = CurrentAuthor.UserName,
+            AuthorId = CurrentAuthor.Id,
+            Message = Flag.Message,
+            SubmittedOn = DateTime.UtcNow
+        });
+
+        if (res is null) throw new System.Exception("Update failed.");
+
+        Trooper = res;
+
+        Flag = new();
+        SortFlags();
+        _refresh.CallRequestRefresh();
+    }
+}

@@ -84,6 +84,56 @@ namespace FiveOhFirstMock.Services
             return user;
         }
 
+        public async Task<Trooper> GetTrooperAsync(ClaimsPrincipal principal)
+        {
+            var scope = _services.CreateScope();
+            var manager = scope.ServiceProvider.GetRequiredService<UserManager<Trooper>>();
+            var user = await manager.GetUserAsync(principal);
+            return user;
+        }
+
+        public async Task LoadFlagsAsync(Trooper t)
+        {
+            var scope = _services.CreateScope();
+            var db = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+            db.Attach(t);
+            await db.Entry(t).Collection(i => i.Flags).LoadAsync();
+        }
+
+        public async Task<Trooper?> AddFlagAsync(Trooper t, TrooperFlag flag)
+        {
+            var scope = _services.CreateScope();
+            var db = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+            var user = await db.FindAsync<Trooper>(t.Id);
+            await db.Entry(user).Collection(i => i.Flags).LoadAsync();
+
+            if (user is null) return null;
+
+            user.Flags.Add(flag);
+            db.Update(user);
+            await db.SaveChangesAsync();
+            return user;
+        }
+
+        public async Task<Trooper?> RemoveFlagAsync(Trooper t, TrooperFlag flag)
+        {
+            var scope = _services.CreateScope();
+            var db = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+            var user = await db.FindAsync<Trooper>(t.Id);
+
+            if (user is null) return null;
+
+            await db.Entry(user).Collection(i => i.Flags).LoadAsync();
+
+            var toRemove = user.Flags.Where(x => x.FlagId == flag.FlagId).ToArray();
+
+            foreach (var f in toRemove)
+                user.Flags.Remove(f);
+            db.Update(user);
+            await db.SaveChangesAsync();
+            return user;
+        }
+
         public async Task UpdateAsync(Trooper updateData, bool clerk = false)
         {
             var scope = _services.CreateScope();
