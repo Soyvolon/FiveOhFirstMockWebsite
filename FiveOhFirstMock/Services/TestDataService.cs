@@ -61,7 +61,8 @@ namespace FiveOhFirstMock.Services
                     },
                     new()
                     {
-                        new("Slotted", "SomeDate")
+                        new("Slotted", "SomeDate"),
+                        new("Instructor", "RTO")
                     },
                     new()
                     {
@@ -80,7 +81,8 @@ namespace FiveOhFirstMock.Services
                     },
                     new()
                     {
-                        new("Slotted", "SomeDate")
+                        new("Slotted", "SomeDate"),
+                        new("Instructor", "Grenadier"),
                     },
                     new()
                     {
@@ -150,7 +152,8 @@ namespace FiveOhFirstMock.Services
                     },
                     new()
                     {
-                        new("Slotted", "SomeDate")
+                        new("Slotted", "SomeDate"),
+                        new("Instructor", "Medic")
                     },
                     new()
                     {

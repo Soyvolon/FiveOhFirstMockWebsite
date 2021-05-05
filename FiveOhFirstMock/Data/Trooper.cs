@@ -1,4 +1,5 @@
 ﻿using FiveOhFirstMock.Data.Enums;
+using FiveOhFirstMock.Data.Forms;
 using Microsoft.AspNetCore.Identity;
 using System;
 using System.Collections.Generic;
@@ -15,5 +16,6 @@ namespace FiveOhFirstMock.Data
         public Flight? Flight { get; set; } = null;
         public Qualifications Qualifications { get; set; }
         public List<TrooperFlag> Flags { get; set; } = new();
+        public List<QualificationSubmission> QualificationSubmissions { get; set; } = new();
     }
 }

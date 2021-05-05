@@ -1,22 +1,22 @@
 ﻿<div class="list-group w-100">
-    <a href="/trooper/@(SquadData.Lead?.Id ?? 0)" class="list-group-item list-group-item-action active">Squad Leader: @(SquadData.Lead?.UserName ?? "")</a>
-    <a href="/trooper/@(SquadData.RT?.Id ?? 0)" class="list-group-item list-group-item-action">RTO: @(SquadData.RT?.UserName ?? "")</a>
-    <a href="/trooper/@(SquadData.Teams[0].Lead?.Id ?? 0)" class="list-group-item list-group-item-action border-danger">Alpha Team Leader: @(SquadData.Teams[0]?.Lead?.UserName ?? "")</a>
-    <a href="/trooper/@(A1?.Id ?? 0)" class="list-group-item list-group-item-action">Alpha Trooper: @(A1?.UserName ?? "")</a>
-    <a href="/trooper/@(A2?.Id ?? 0)" class="list-group-item list-group-item-action">Alpha Trooper: @(A2?.UserName ?? "")</a>
+    <a href="/trooper/@(SquadData.Lead?.Id ?? 0)" class="list-group-item list-group-item-action bg-dark text-light">Squad Leader: @(SquadData.Lead?.UserName ?? "")</a>
+    <a href="/trooper/@(SquadData.RT?.Id ?? 0)" class="list-group-item list-group-item-action border-dark">RTO: @(SquadData.RT?.UserName ?? "")</a>
+    <a href="/trooper/@(SquadData.Teams[0].Lead?.Id ?? 0)" class="list-group-item list-group-item-action bg-danger text-dark">Alpha Team Leader: @(SquadData.Teams[0]?.Lead?.UserName ?? "")</a>
+    <a href="/trooper/@(A1?.Id ?? 0)" class="list-group-item list-group-item-action border-danger">Alpha Trooper: @(A1?.UserName ?? "")</a>
+    <a href="/trooper/@(A2?.Id ?? 0)" class="list-group-item list-group-item-action border-danger">Alpha Trooper: @(A2?.UserName ?? "")</a>
     @foreach (var t in RemaningATroopers)
     {
-        <a href="/trooper/@(t.Id)" class="list-group-item list-group-item-action">Alpha Trooper: @(t.UserName ?? "")</a>
+        <a href="/trooper/@(t.Id)" class="list-group-item list-group-item-action border-danger">Alpha Trooper: @(t.UserName ?? "")</a>
     }
-    <a href="/trooper/@(SquadData.Teams[0].Medic?.Id ?? 0)" class="list-group-item list-group-item-action">Alpha Team Medic: @(SquadData.Teams[0]?.Medic?.UserName ?? "")</a>
-    <a href="/trooper/@(SquadData.Teams[1].Lead?.Id ?? 0)" class="list-group-item list-group-item-action border-primary">Bravo Team Leader: @(SquadData.Teams[0]?.Lead?.UserName ?? "")</a>
-    <a href="/trooper/@(B1?.Id ?? 0)" class="list-group-item list-group-item-action">Bravo Trooper: @(B1?.UserName ?? "")</a>
-    <a href="/trooper/@(B2?.Id ?? 0)" class="list-group-item list-group-item-action">Bravo Trooper: @(B2?.UserName ?? "")</a>
+    <a href="/trooper/@(SquadData.Teams[0].Medic?.Id ?? 0)" class="list-group-item list-group-item-action border-danger">Alpha Team Medic: @(SquadData.Teams[0]?.Medic?.UserName ?? "")</a>
+    <a href="/trooper/@(SquadData.Teams[1].Lead?.Id ?? 0)" class="list-group-item list-group-item-action bg-primary text-light">Bravo Team Leader: @(SquadData.Teams[0]?.Lead?.UserName ?? "")</a>
+    <a href="/trooper/@(B1?.Id ?? 0)" class="list-group-item list-group-item-action border-primary">Bravo Trooper: @(B1?.UserName ?? "")</a>
+    <a href="/trooper/@(B2?.Id ?? 0)" class="list-group-item list-group-item-action border-primary">Bravo Trooper: @(B2?.UserName ?? "")</a>
     @foreach (var t in RemaningBTroopers)
     {
-    <a href="/trooper/@(t.Id)" class="list-group-item list-group-item-action">Bravo Trooper: @(t.UserName ?? "")</a>
+    <a href="/trooper/@(t.Id)" class="list-group-item list-group-item-action border-primary">Bravo Trooper: @(t.UserName ?? "")</a>
     }
-    <a href="/trooper/@(SquadData.Teams[1].Medic?.Id ?? 0)" class="list-group-item list-group-item-action">Bravo Team Medic: @(SquadData.Teams[0]?.Medic?.UserName ?? "")</a>
+    <a href="/trooper/@(SquadData.Teams[1].Medic?.Id ?? 0)" class="list-group-item list-group-item-action border-primary">Bravo Team Medic: @(SquadData.Teams[0]?.Medic?.UserName ?? "")</a>
 </div>
 
 @code {

@@ -1,0 +1,148 @@
+﻿@page "/qualification/submit"
+@inject IServiceProvider _services
+@inject IRefreshRequestService _refresh
+@inject QualificationService _qual
+@inject RosterService _roster
+
+<AuthorizeView Policy="RequireInstructor">
+    <Authorized>
+        <EditForm class="contaier" Context="fromContext" Model="Submission">
+            <h1>Submit Qualification</h1>
+            @if(Errors.Count > 0)
+            {
+            <div id="errors" class="row">
+                <div class="col m-1 p-2 bg-danger text-dark">
+                    <strong>Some errors occoured:</strong>
+                    <ul>
+                        @foreach(var e in Errors)
+                        {
+                            <li>@e</li>
+                        }
+                    </ul>
+                </div>
+            </div>
+            }
+            <label for="students">Students</label>
+            <IdStringListSelect Services="_services" Refresh="_refresh" id="students" @bind-Value="Submission.Members" class="form-control w-100"/>
+            <hr />
+            <label for="qualification">Qualification</label>
+            <InputSelect id="qualification" @bind-Value="Submission.Qualification" class="form-control">
+            @foreach(var qual in Enum.GetValues<Qualifications>())
+            {
+                if((qual & AllowedQualifications) == qual)
+                {
+                    <option value="@qual">@qual.ToString()</option>
+                }
+            }
+            </InputSelect>
+            <hr />
+            <label for="instructors">Instructors</label>
+            <IdStringListSelect Services="_services" Refresh="_refresh" id="instructors" @bind-Value="Submission.Instructors" class="form-control w-100"/>
+            <hr />
+            @foreach(var t in Submission.Members)
+            {
+                @if(!Submission.Submissions.TryGetValue(t.Id, out _)) Submission.Submissions[t.Id] = new();
+
+                <div class="row">
+                    <div class="col form-group">
+                        <h4>@t.UserName</h4>
+                        <label for="@(t.UserName + "-pass-fail")">Status</label>
+                        <InputSelect id="@(t.UserName + "-pass-fail")" class="form-control" @bind-Value="Submission.Submissions[t.Id].Status">
+                            @foreach(var status in Enum.GetValues<QualificationStatus>())
+                            {
+                                <option value="@status">@status.ToString()</option>
+                            }
+                        </InputSelect>
+                        <label for="@(t.UserName + "-notes")">Notes</label>
+                        <InputText id="@(t.UserName + "-notes")" class="form-control" @bind-Value="Submission.Submissions[t.Id].Notes" />
+                    </div>
+                </div>
+            }
+            <hr />
+            <button class="btn btn-block btn-primary" @onclick="OnSubmitPressedAsync">Submit</button>
+        </EditForm>
+    </Authorized>
+    <NotAuthorized>
+        <em>You do not have permissions to view this resource. Go <a href="/">home</a>.</em>
+    </NotAuthorized>
+</AuthorizeView>
+
+@code {
+    public BatchQualificationSubmission Submission { get; set; } = new();
+
+    public List<string> Errors { get; set; } = new();
+    public List<string> Status { get; set; } = new();
+
+    [CascadingParameter]
+    public Task<AuthenticationState> authStateTask { get; set; }
+
+    protected Qualifications AllowedQualifications {get;set;}
+
+    protected override async Task OnParametersSetAsync()
+    {
+        await base.OnParametersSetAsync();
+
+        var user = (await authStateTask).User;
+
+        var trooper = await _roster.GetTrooperAsync(user);
+        Submission.Instructors.Add(trooper);
+
+        AllowedQualifications = user.GetAllowedQualifications();
+
+        _refresh.RefreshRequested += RefreshMe;
+    }
+
+    private void RefreshMe()
+    {
+        StateHasChanged();
+    }
+
+    private async Task OnSubmitPressedAsync(EventArgs e)
+    {
+        Errors.Clear();
+        Status.Clear();
+
+        var user = (await authStateTask).User;
+
+        if(user.HasClaim(x => x.Type == "Instructor") || user.IsInRole("Admin"))
+        {
+            var allowed = user.GetAllowedQualifications();
+
+            if((allowed & Submission.Qualification) == Submission.Qualification)
+            {
+                if(Submission.Instructors.Count <= 0)
+                {
+                    Errors.Add("At least one instructor must be specified.");
+                }
+
+                if(Submission.Members.Count <= 0)
+                {
+                    Errors.Add("At least one student must be specified.");
+                }
+
+                if(Submission.Qualification == Qualifications.None)
+                {
+                    Errors.Add("A qualification must be selected.");
+                }
+
+                if(Errors.Count <= 0)
+                {
+                    await _qual.SubmitQualificationsAsync(Submission);
+
+                    Status.Add("Submitted qualification changes.");
+                }
+                else return;
+            }
+            else
+            {
+                Errors.Add("You don't have permission to submit a qualification of this type.");
+            }
+        }
+        else
+        {
+            Errors.Add("You are not authroized to submit this form.");
+        }
+
+        Submission = new();
+    }
+}

@@ -19,6 +19,33 @@ namespace FiveOhFirstMock.Migrations
                 .HasAnnotation("ProductVersion", "6.0.0-preview.3.21201.2")
                 .HasAnnotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn);
 
+            modelBuilder.Entity("FiveOhFirstMock.Data.Forms.QualificationSubmission", b =>
+                {
+                    b.Property<int>("SubmissionKey")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer")
+                        .HasAnnotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn);
+
+                    b.Property<string>("Notes")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<long>("Qualifications")
+                        .HasColumnType("bigint");
+
+                    b.Property<int>("Status")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("TrooperId")
+                        .HasColumnType("integer");
+
+                    b.HasKey("SubmissionKey");
+
+                    b.HasIndex("TrooperId");
+
+                    b.ToTable("QualificationSubmissions");
+                });
+
             modelBuilder.Entity("FiveOhFirstMock.Data.Trooper", b =>
                 {
                     b.Property<int>("Id")
@@ -66,6 +93,9 @@ namespace FiveOhFirstMock.Migrations
                     b.Property<bool>("PhoneNumberConfirmed")
                         .HasColumnType("boolean");
 
+                    b.Property<int?>("QualificationSubmissionSubmissionKey")
+                        .HasColumnType("integer");
+
                     b.Property<long>("Qualifications")
                         .HasColumnType("bigint");
 
@@ -97,6 +127,8 @@ namespace FiveOhFirstMock.Migrations
                         .IsUnique()
                         .HasDatabaseName("UserNameIndex");
 
+                    b.HasIndex("QualificationSubmissionSubmissionKey");
+
                     b.ToTable("AspNetUsers");
                 });
 
@@ -121,7 +153,7 @@ namespace FiveOhFirstMock.Migrations
                     b.Property<DateTime>("SubmittedOn")
                         .HasColumnType("timestamp without time zone");
 
-                    b.Property<int?>("TrooperId")
+                    b.Property<int>("TrooperId")
                         .HasColumnType("integer");
 
                     b.HasKey("FlagId");
@@ -260,11 +292,31 @@ namespace FiveOhFirstMock.Migrations
                     b.ToTable("AspNetUserTokens");
                 });
 
+            modelBuilder.Entity("FiveOhFirstMock.Data.Forms.QualificationSubmission", b =>
+                {
+                    b.HasOne("FiveOhFirstMock.Data.Trooper", "Trooper")
+                        .WithMany("QualificationSubmissions")
+                        .HasForeignKey("TrooperId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Trooper");
+                });
+
+            modelBuilder.Entity("FiveOhFirstMock.Data.Trooper", b =>
+                {
+                    b.HasOne("FiveOhFirstMock.Data.Forms.QualificationSubmission", null)
+                        .WithMany("Instructors")
+                        .HasForeignKey("QualificationSubmissionSubmissionKey");
+                });
+
             modelBuilder.Entity("FiveOhFirstMock.Data.TrooperFlag", b =>
                 {
                     b.HasOne("FiveOhFirstMock.Data.Trooper", null)
                         .WithMany("Flags")
-                        .HasForeignKey("TrooperId");
+                        .HasForeignKey("TrooperId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<int>", b =>
@@ -318,9 +370,16 @@ namespace FiveOhFirstMock.Migrations
                         .IsRequired();
                 });
 
+            modelBuilder.Entity("FiveOhFirstMock.Data.Forms.QualificationSubmission", b =>
+                {
+                    b.Navigation("Instructors");
+                });
+
             modelBuilder.Entity("FiveOhFirstMock.Data.Trooper", b =>
                 {
                     b.Navigation("Flags");
+
+                    b.Navigation("QualificationSubmissions");
                 });
 #pragma warning restore 612, 618
         }

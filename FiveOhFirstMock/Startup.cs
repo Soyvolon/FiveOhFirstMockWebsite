@@ -86,6 +86,15 @@ namespace FiveOhFirstMock
                     {
                         policy.RequireRole("Admin", "NCO");
                     });
+                options.AddPolicy("RequireInstructor",
+                    policy =>
+                    {
+                        policy.RequireAssertion(ctx =>
+                        {
+                            return ctx.User.HasClaim(x => x.Type == "Instructor")
+                                || ctx.User.IsInRole("Admin");
+                        });
+                    });
             });
 
             services.AddScoped<AuthenticationStateProvider, RevalidatingIdentityAuthenticationStateProvider<Trooper>>();
@@ -101,7 +110,8 @@ namespace FiveOhFirstMock
             });
 
             #region Roster
-            services.AddScoped<RosterService>();
+            services.AddScoped<RosterService>()
+                .AddScoped<QualificationService>();
             #endregion
 
             #region Example Tools
